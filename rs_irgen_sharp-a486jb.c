@@ -154,12 +154,15 @@ void encode_aeha(U8 data[], int length, U8 out[])
 void usage(int argc, char **argv)
 {
     fprintf(stderr,
-        "Usage: %s -p power -t temp -m mode -v volume\n"
-        " -p: power: 0:off 1:on\n"
-        " -t: temp:  18 to 32\n"
-        " -m: mode:  0:auto 1:heat 2:cool 3:dry\n"
-        " -v: volume: 0:auto 1 2 3\n"
-        "", argv[0]
+        "Usage:\n"
+        "  %s -p power -t temp -m mode -v volume\n"
+        "  %s -f [0|1]\n\n"
+        "     -p: power: 0:off 1:on\n"
+        "     -t: temp:  18 to 32\n"
+        "     -m: mode:  0:auto 1:heat 2:cool 3:dry\n"
+        "     -v: volume: 0:auto 1 2 3\n"
+        "     -f: fullpower: 0:off 1:on\n"
+        "", argv[0], argv[0]
     );
 }
 
@@ -176,7 +179,7 @@ int main(int argc, char **argv)
     for(i = 0; i < DATA_LENGTH; i++) { s.c[i] = 0; }
     for(i = 0; i < MAX_ENCDATA_LENGTH; i++) { out[i] = 0; }
 
-    while((opt = getopt(argc, argv, "p:t:m:v:f")) != -1)
+    while((opt = getopt(argc, argv, "p:t:m:v:f:")) != -1)
     {
         switch(opt)
         {
@@ -193,7 +196,7 @@ int main(int argc, char **argv)
             cmdVolume = atoi(optarg);
             break;
         case 'f':
-            cmdIsFullPower = TRUE;
+            cmdIsFullPower = atoi(optarg);
             break;
         default:
             usage(argc, argv);
@@ -207,7 +210,9 @@ int main(int argc, char **argv)
     if((cmdPower != 0 && cmdPower != 1) ||
        (cmdTemp < 18 || cmdTemp > 32) ||
        (cmdMode < 0 || cmdMode > 3) ||
-       (cmdVolume < 0 || cmdVolume > 3))
+       (cmdVolume < 0 || cmdVolume > 3) ||
+       (cmdIsFullPower != UNSET && cmdIsFullPower != 0 && cmdIsFullPower != 1)
+    )
     {
         usage(argc, argv);
         exit(EXIT_FAILURE);
@@ -233,7 +238,14 @@ int main(int argc, char **argv)
 
     // コマンドデータ
     s.s.temp = cmdTemp - 17;
-    s.s.cmd = (cmdPower == 1 ? 1 : 2);
+    if(cmdIsFullPower == UNSET)
+    {
+        s.s.cmd = (cmdPower == 1 ? 1 : 2);
+    }
+    else
+    {
+        s.s.cmd = (cmdIsFullPower == 1 ? 6 : 7);
+    }
     s.s.mode = cmdMode;
     s.s.set_volume = (cmdVolume == 0 ? 0 : 1);
     s.s.volume = (cmdVolume == 1 ? 1 : cmdVolume);
@@ -241,7 +253,7 @@ int main(int argc, char **argv)
     s.s.timer_1hoff = 0;
     s.s.timer_mode = 0;
     s.s.direction = 0;
-    s.s.fullpower = (cmdIsFullPower ? 1 : 0);
+    s.s.fullpower = (cmdIsFullPower != UNSET ? 1 : 0);
     s.s.timer_30min = 0;
     s.s.eco = 0;
     s.s.checksum = 0;
