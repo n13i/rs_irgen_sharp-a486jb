@@ -23,6 +23,8 @@
 #define DATA_LENGTH (13)
 
 #define UNSET (-1)
+#define TRUE (1)
+#define FALSE (0)
 
 typedef unsigned char U8;
 
@@ -165,6 +167,7 @@ int main(int argc, char **argv)
 {
     int i;
     int cmdPower = UNSET, cmdTemp = UNSET, cmdMode = UNSET, cmdVolume = UNSET;
+    int cmdIsFullPower = FALSE;
     U8 out[MAX_ENCDATA_LENGTH];
     U8 outbyte[MAX_ENCBYTE_LENGTH];
     SIGNAL s;
@@ -173,7 +176,7 @@ int main(int argc, char **argv)
     for(i = 0; i < DATA_LENGTH; i++) { s.c[i] = 0; }
     for(i = 0; i < MAX_ENCDATA_LENGTH; i++) { out[i] = 0; }
 
-    while((opt = getopt(argc, argv, "p:t:m:v:")) != -1)
+    while((opt = getopt(argc, argv, "p:t:m:v:f")) != -1)
     {
         switch(opt)
         {
@@ -188,6 +191,9 @@ int main(int argc, char **argv)
             break;
         case 'v':
             cmdVolume = atoi(optarg);
+            break;
+        case 'f':
+            cmdIsFullPower = TRUE;
             break;
         default:
             usage(argc, argv);
@@ -235,7 +241,7 @@ int main(int argc, char **argv)
     s.s.timer_1hoff = 0;
     s.s.timer_mode = 0;
     s.s.direction = 0;
-    s.s.fullpower = 0;
+    s.s.fullpower = (cmdIsFullPower ? 1 : 0);
     s.s.timer_30min = 0;
     s.s.eco = 0;
     s.s.checksum = 0;
