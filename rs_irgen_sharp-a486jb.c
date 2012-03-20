@@ -170,7 +170,7 @@ int main(int argc, char **argv)
 {
     int i;
     int cmdPower = UNSET, cmdTemp = UNSET, cmdMode = UNSET, cmdVolume = UNSET;
-    int cmdIsFullPower = FALSE;
+    int cmdIsFullPower = UNSET;
     U8 out[MAX_ENCDATA_LENGTH];
     U8 outbyte[MAX_ENCBYTE_LENGTH];
     SIGNAL s;
